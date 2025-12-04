@@ -1,0 +1,54 @@
+pipeline:
+  name: "VAT Integration Pipeline - Phase 1"
+  version: "1.0.0"
+
+processing:
+  batch_size: 1000
+  max_retries: 3
+  timeout_seconds: 300
+
+validation:
+  strict_mode: true
+  required_fields:
+    - transaction_id
+    - amount
+    - country_code
+    - transaction_date
+    - category
+
+  rules:
+    amount:
+      min: 0
+      max: 1000000
+    country_code:
+      type: "string"
+      length: 2
+    transaction_date:
+      format: "%Y-%m-%d"
+
+output:
+  format: "csv"
+  include_timestamp: true
+  file_prefix: "vat_processed"
+  columns:
+    - transaction_id
+    - amount
+    - country_code
+    - transaction_date
+    - category
+    - vat_rate
+    - vat_amount
+    - total_amount
+    - validation_status
+    - processed_timestamp
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  output: "logs/pipeline.log"
+
+error_handling:
+  on_validation_error: "log_and_skip"
+  on_calculation_error: "log_and_skip"
+  create_error_report: true
+  error_report_path: "data/output/errors"

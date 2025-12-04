@@ -1,0 +1,115 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-01-01",
+  "rates": {
+    "AT": {
+      "country": "Austria",
+      "standard_rate": 20.0,
+      "reduced_rates": [10.0, 13.0],
+      "categories": {
+        "standard": 20.0,
+        "food": 10.0,
+        "books": 10.0,
+        "medical": 10.0,
+        "transport": 13.0
+      }
+    },
+    "BE": {
+      "country": "Belgium",
+      "standard_rate": 21.0,
+      "reduced_rates": [6.0, 12.0],
+      "categories": {
+        "standard": 21.0,
+        "food": 6.0,
+        "books": 6.0,
+        "medical": 6.0,
+        "transport": 12.0
+      }
+    },
+    "DE": {
+      "country": "Germany",
+      "standard_rate": 19.0,
+      "reduced_rates": [7.0],
+      "categories": {
+        "standard": 19.0,
+        "food": 7.0,
+        "books": 7.0,
+        "medical": 7.0,
+        "transport": 19.0
+      }
+    },
+    "FR": {
+      "country": "France",
+      "standard_rate": 20.0,
+      "reduced_rates": [5.5, 10.0],
+      "categories": {
+        "standard": 20.0,
+        "food": 5.5,
+        "books": 5.5,
+        "medical": 5.5,
+        "transport": 10.0
+      }
+    },
+    "GB": {
+      "country": "United Kingdom",
+      "standard_rate": 20.0,
+      "reduced_rates": [5.0],
+      "categories": {
+        "standard": 20.0,
+        "food": 0.0,
+        "books": 0.0,
+        "medical": 0.0,
+        "transport": 20.0
+      }
+    },
+    "IT": {
+      "country": "Italy",
+      "standard_rate": 22.0,
+      "reduced_rates": [4.0, 5.0, 10.0],
+      "categories": {
+        "standard": 22.0,
+        "food": 4.0,
+        "books": 4.0,
+        "medical": 10.0,
+        "transport": 10.0
+      }
+    },
+    "ES": {
+      "country": "Spain",
+      "standard_rate": 21.0,
+      "reduced_rates": [4.0, 10.0],
+      "categories": {
+        "standard": 21.0,
+        "food": 10.0,
+        "books": 4.0,
+        "medical": 4.0,
+        "transport": 10.0
+      }
+    },
+    "NL": {
+      "country": "Netherlands",
+      "standard_rate": 21.0,
+      "reduced_rates": [9.0],
+      "categories": {
+        "standard": 21.0,
+        "food": 9.0,
+        "books": 9.0,
+        "medical": 9.0,
+        "transport": 21.0
+      }
+    },
+    "US": {
+      "country": "United States",
+      "standard_rate": 0.0,
+      "reduced_rates": [],
+      "categories": {
+        "standard": 0.0,
+        "food": 0.0,
+        "books": 0.0,
+        "medical": 0.0,
+        "transport": 0.0
+      },
+      "note": "US uses sales tax at state level, not VAT"
+    }
+  }
+}
