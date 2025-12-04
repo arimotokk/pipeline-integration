@@ -38,7 +38,7 @@ class VATPipeline:
         log_config = self.config.get('logging', {})
         log_file = log_config.get('output', 'logs/pipeline.log')
         log_level = log_config.get('level', 'INFO')
-        self.logger = setup_logger('VATipeline', log_file, log_level)
+        self.logger = setup_logger('VATPipeline', log_file, log_level)
 
         # Initialize components
         vat_rates_path = 'config/vat_rates.json'
@@ -287,7 +287,7 @@ def main():
 
     try:
         # Initialize and run pipeline
-        pipeline = VATipeline(config_path=args.config)
+        pipeline = VATPipeline(config_path=args.config)
         results = pipeline.process(args.input, args.output)
 
         # Print summary
