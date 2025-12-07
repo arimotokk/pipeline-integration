@@ -1,0 +1,21 @@
+invoice_number,transaction_id,amount,currency,country_code,invoice_date,category,customer_name,customer_vat_number,vendor_name,vendor_vat_number,description
+INV-2025-001,TXN001,100.00,EUR,DE,2025-01-15,standard,Acme Corp,DE123456789,Tech Solutions GmbH,DE987654321,Software license
+INV-2025-002,TXN002,50.00,EUR,DE,2025-01-15,food,Fresh Market,DE111222333,Food Supplier,DE444555666,Catering services
+INV-2025-003,TXN003,200.00,EUR,FR,2025-02-16,standard,Paris Ltd,FR123456789,Consulting SARL,FR987654321,Consulting services
+INV-2025-004,TXN004,75.50,EUR,FR,2025-02-20,food,Bistro Rouge,FR111222333,Wine Import,FR444555666,Wine delivery
+INV-2025-005,TXN005,150.00,EUR,GB,2025-03-10,standard,London Inc,GB123456789,UK Services Ltd,GB987654321,Marketing services
+INV-2025-006,TXN006,30.00,EUR,IT,2025-04-05,books,Libreria Roma,IT123456789,Publisher SRL,IT987654321,Book wholesale
+INV-2025-007,TXN007,500.00,EUR,ES,2025-04-18,transport,Transport SA,ES123456789,Logistics SL,ES987654321,Shipping services
+INV-2025-008,TXN008,89.99,EUR,NL,2025-05-12,food,Dutch Deli,NL123456789,Food BV,NL987654321,Food supplies
+INV-2025-009,TXN009,250.00,EUR,BE,2025-06-15,medical,Brussels Health,BE123456789,Medical SPRL,BE987654321,Medical equipment
+INV-2025-010,TXN010,125.00,EUR,AT,2025-06-20,standard,Vienna GmbH,AT123456789,Services AG,AT987654321,IT support
+INV-2025-011,TXN011,300.00,EUR,DE,2025-07-10,standard,Munich Tech,DE222333444,Software House,DE555666777,Development
+INV-2025-012,TXN012,180.00,EUR,FR,2025-08-15,transport,Lyon Transport,FR222333444,Freight SARL,FR555666777,Freight services
+INV-2025-013,TXN013,95.50,EUR,GB,2025-09-20,books,Oxford Books,GB222333444,Publishing Ltd,GB555666777,Educational books
+INV-2025-014,TXN014,420.00,EUR,IT,2025-10-05,standard,Milan Design,IT222333444,Architecture Studio,IT555666777,Design services
+INV-2025-015,TXN015,65.00,EUR,ES,2025-11-12,food,Barcelona Food,ES222333444,Gourmet SL,ES555666777,Restaurant supplies
+INV-2025-016,TXN016,275.00,EUR,NL,2025-12-01,standard,Amsterdam BV,NL222333444,Tech NL,NL555666777,Cloud services
+INV-2025-017,TXN017,150.00,EUR,BE,2025-12-10,transport,Antwerp Logistics,BE222333444,Shipping SPRL,BE555666777,Container transport
+INV-2025-018,TXN018,85.00,EUR,AT,2025-12-15,food,Salzburg Cafe,AT222333444,Coffee AG,AT555666777,Coffee beans
+INV-2025-019,TXN019,550.00,EUR,DE,2025-01-25,medical,Berlin Hospital,DE333444555,Medical Supply,DE666777888,Hospital equipment
+INV-2025-020,TXN020,220.00,EUR,FR,2025-03-30,books,Nice Librairie,FR333444555,French Publisher,FR666777888,French literature

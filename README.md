@@ -1,7 +1,43 @@
-# VAT Integration Pipeline - Phase 1
+# VAT Integration Pipeline
 
 ## Overview
-This project implements Phase 1 of the VAT (Value Added Tax) Integration Pipeline, providing automated VAT calculation, validation, and data processing capabilities.
+The VAT (Value Added Tax) Integration Pipeline provides automated VAT calculation, validation, data processing, batch uploads, and period management for businesses handling multi-country VAT compliance.
+
+**Current Version**: Phase 2
+- ✅ Phase 1: Core VAT calculation and batch processing
+- ✅ Phase 2: Database, REST API, VAT period management, invoice history
+
+## Quick Start
+
+### Phase 2 (Current)
+```bash
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements-phase2.txt
+
+# Setup database and sample data
+python scripts/setup_phase2.py
+
+# Start API server
+python -m uvicorn src.api.main:app --reload
+
+# Access API at http://localhost:8000/docs
+```
+
+See **[Phase 2 Documentation](docs/PHASE2.md)** for complete API reference.
+
+### Phase 1 (CLI Mode)
+```bash
+python -m src.pipeline.runner --input data/input/sample_transactions.csv --output data/output/
+```
+
+## Phase 2 Features (NEW)
+- **Batch Upload API**: Upload CSV/JSON/Excel files via REST API
+- **VAT Period Management**: Create, track, close, and submit quarterly/monthly periods
+- **Invoice History**: Store all invoices in database with full search and filtering
+- **REST API**: Full-featured API with auto-generated documentation
+- **Advanced Filtering**: Filter by country, date range, amount, category, VAT period
+- **Reporting**: Period summaries with breakdowns by country and category
 
 ## Phase 1 Features
 - VAT rate configuration by country and region
