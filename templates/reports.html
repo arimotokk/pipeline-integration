@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - VAT Pipeline{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>📊 Download Reports</h2>
+    <p>Generate and download VAT reports in Excel or PDF format.</p>
+</div>
+
+<div class="grid">
+    <div class="stat-card">
+        <h3>VAT Period Reports</h3>
+        <p style="color: #7f8c8d; margin: 1rem 0;">Quarterly or monthly period summaries</p>
+        <button class="btn" onclick="showPeriodReports()">Generate</button>
+    </div>
+
+    <div class="stat-card">
+        <h3>Date Range Reports</h3>
+        <p style="color: #7f8c8d; margin: 1rem 0;">Custom date range analysis</p>
+        <button class="btn" onclick="showDateRangeReports()">Generate</button>
+    </div>
+
+    <div class="stat-card">
+        <h3>Country Breakdown</h3>
+        <p style="color: #7f8c8d; margin: 1rem 0;">VAT summary by country</p>
+        <button class="btn" onclick="showCountryReports()">Generate</button>
+    </div>
+
+    <div class="stat-card">
+        <h3>All Invoices</h3>
+        <p style="color: #7f8c8d; margin: 1rem 0;">Complete invoice export</p>
+        <button class="btn" onclick="showAllInvoicesReport()">Generate</button>
+    </div>
+</div>
+
+<!-- VAT Period Reports -->
+<div id="periodReportsCard" class="card" style="display: none;">
+    <h2>📅 VAT Period Reports</h2>
+    <form id="periodReportForm">
+        <div class="form-group">
+            <label for="period_id">Select VAT Period</label>
+            <select id="period_id" name="period_id" required>
+                <option value="">-- Select Period --</option>
+                {% for period in vat_periods %}
+                <option value="{{ period.id }}">
+                    {{ period.period_name }} ({{ period.total_invoices }} invoices, €{{ "%.2f"|format(period.total_vat_amount) }} VAT)
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <button type="button" onclick="downloadReport('period', 'excel')" class="btn btn-success">
+                📗 Download Excel
+            </button>
+            <button type="button" onclick="downloadReport('period', 'pdf')" class="btn btn-danger">
+                📕 Download PDF
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Date Range Reports -->
+<div id="dateRangeCard" class="card" style="display: none;">
+    <h2>📆 Date Range Reports</h2>
+    <form id="dateRangeForm">
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" required>
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" required>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <button type="button" onclick="downloadReport('daterange', 'excel')" class="btn btn-success">
+                📗 Download Excel
+            </button>
+            <button type="button" onclick="downloadReport('daterange', 'pdf')" class="btn btn-danger">
+                📕 Download PDF
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Country Breakdown -->
+<div id="countryCard" class="card" style="display: none;">
+    <h2>🌍 Country Breakdown Reports</h2>
+    <form id="countryForm">
+        <div class="form-group">
+            <label for="country_code_report">Select Country</label>
+            <select id="country_code_report" name="country_code" required>
+                <option value="">-- All Countries --</option>
+                <option value="AT">Austria</option>
+                <option value="BE">Belgium</option>
+                <option value="DE">Germany</option>
+                <option value="ES">Spain</option>
+                <option value="FR">France</option>
+                <option value="GB">United Kingdom</option>
+                <option value="IT">Italy</option>
+                <option value="NL">Netherlands</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <button type="button" onclick="downloadReport('country', 'excel')" class="btn btn-success">
+                📗 Download Excel
+            </button>
+            <button type="button" onclick="downloadReport('country', 'pdf')" class="btn btn-danger">
+                📕 Download PDF
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- All Invoices -->
+<div id="allInvoicesCard" class="card" style="display: none;">
+    <h2>📋 All Invoices Export</h2>
+    <p>Export all invoices in the system.</p>
+    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        <button type="button" onclick="downloadReport('all', 'excel')" class="btn btn-success">
+            📗 Download Excel
+        </button>
+        <button type="button" onclick="downloadReport('all', 'pdf')" class="btn btn-danger">
+            📕 Download PDF
+        </button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showPeriodReports() {
+        hideAllCards();
+        document.getElementById('periodReportsCard').style.display = 'block';
+    }
+
+    function showDateRangeReports() {
+        hideAllCards();
+        document.getElementById('dateRangeCard').style.display = 'block';
+    }
+
+    function showCountryReports() {
+        hideAllCards();
+        document.getElementById('countryCard').style.display = 'block';
+    }
+
+    function showAllInvoicesReport() {
+        hideAllCards();
+        document.getElementById('allInvoicesCard').style.display = 'block';
+    }
+
+    function hideAllCards() {
+        document.getElementById('periodReportsCard').style.display = 'none';
+        document.getElementById('dateRangeCard').style.display = 'none';
+        document.getElementById('countryCard').style.display = 'none';
+        document.getElementById('allInvoicesCard').style.display = 'none';
+    }
+
+    function downloadReport(reportType, format) {
+        let url = '/api/reports/download?format=' + format;
+
+        if (reportType === 'period') {
+            const periodId = document.getElementById('period_id').value;
+            if (!periodId) {
+                alert('Please select a VAT period');
+                return;
+            }
+            url += '&type=period&period_id=' + periodId;
+        } else if (reportType === 'daterange') {
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
+            url += '&type=daterange&start_date=' + startDate + '&end_date=' + endDate;
+        } else if (reportType === 'country') {
+            const country = document.getElementById('country_code_report').value;
+            if (country) {
+                url += '&type=country&country_code=' + country;
+            } else {
+                url += '&type=all';
+            }
+        } else if (reportType === 'all') {
+            url += '&type=all';
+        }
+
+        // Open in new tab to download
+        window.open(url, '_blank');
+    }
+</script>
+{% endblock %}

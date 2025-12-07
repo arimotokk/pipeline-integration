@@ -1,14 +1,18 @@
 """FastAPI main application for VAT Integration Pipeline Phase 2"""
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Depends
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Depends, Form, Request
+from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
+from fastapi.templating import Jinja2Templates
 from typing import List, Optional
 from pydantic import BaseModel
+from datetime import datetime
 import tempfile
 import os
+from pathlib import Path
 
 from ..services.batch_upload_service import BatchUploadService
 from ..services.vat_period_service import VATPeriodService
+from ..services.report_service import ReportService
 from ..database.repositories import InvoiceRepository
 from ..database.connection import get_db_manager, get_db_session
 from ..utils.logger import get_logger
@@ -16,16 +20,21 @@ from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+# Setup Jinja2 templates
+templates_dir = Path(__file__).parent.parent.parent / "templates"
+templates = Jinja2Templates(directory=str(templates_dir))
+
 # Create FastAPI app
 app = FastAPI(
     title="VAT Integration Pipeline API",
-    description="Phase 2 API for batch uploads, VAT period management, and invoice history",
-    version="2.0.0"
+    description="Phase 3 API with web UI, batch uploads, VAT period management, and reporting",
+    version="3.0.0"
 )
 
 # Initialize services
 batch_service = BatchUploadService()
 period_service = VATPeriodService()
+report_service = ReportService()
 
 
 # Pydantic models for request/response
@@ -62,9 +71,18 @@ def root():
     """Root endpoint - API health check"""
     return {
         "name": "VAT Integration Pipeline API",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "status": "healthy",
-        "phase": "2"
+        "phase": "3",
+        "features": [
+            "Batch Upload Processing",
+            "VAT Period Management",
+            "Invoice Filtering & Search",
+            "Web UI Dashboard",
+            "Manual Data Entry",
+            "Error Dashboard",
+            "Excel & PDF Reports"
+        ]
     }
 
 
@@ -328,6 +346,194 @@ def list_batch_uploads(
         "count": len(batches),
         "batches": batches
     }
+
+
+# Web UI endpoints (Phase 3)
+@app.get("/ui/dashboard", response_class=HTMLResponse)
+async def web_dashboard(request: Request, session = Depends(get_db_session)):
+    """Web UI dashboard"""
+    invoice_repo = InvoiceRepository(session)
+
+    # Get statistics
+    total_invoices = invoice_repo.count()
+    stats = invoice_repo.get_summary_stats()
+    failed_count = invoice_repo.count(validation_status='invalid')
+
+    # Get recent invoices
+    recent_invoices = invoice_repo.get_all(limit=10)
+
+    # Get VAT periods
+    vat_periods = period_service.get_all_periods(limit=10)
+
+    return templates.TemplateResponse("dashboard.html", {
+        "request": request,
+        "total_invoices": total_invoices,
+        "failed_count": failed_count,
+        "stats": stats,
+        "recent_invoices": [inv.to_dict() for inv in recent_invoices],
+        "vat_periods": vat_periods
+    })
+
+
+@app.get("/ui/errors", response_class=HTMLResponse)
+async def web_error_dashboard(request: Request, session = Depends(get_db_session)):
+    """Web UI for failed invoice extractions"""
+    invoice_repo = InvoiceRepository(session)
+
+    # Get failed invoices
+    failed_invoices = invoice_repo.filter(validation_status='invalid', limit=1000)
+
+    # Calculate statistics
+    total_failed = len(failed_invoices)
+    total_invoices = invoice_repo.count()
+    success_rate = ((total_invoices - total_failed) / total_invoices * 100) if total_invoices > 0 else 0
+
+    return templates.TemplateResponse("error_dashboard.html", {
+        "request": request,
+        "failed_invoices": [inv.to_dict() for inv in failed_invoices],
+        "total_failed": total_failed,
+        "pending_review": total_failed,  # All failed are pending
+        "resolved": 0,
+        "success_rate": success_rate
+    })
+
+
+@app.get("/ui/manual-entry", response_class=HTMLResponse)
+@app.get("/ui/manual-entry/{invoice_id}", response_class=HTMLResponse)
+async def web_manual_entry(request: Request, invoice_id: Optional[int] = None, session = Depends(get_db_session)):
+    """Web UI for manual data entry"""
+    invoice_data = None
+
+    if invoice_id:
+        invoice_repo = InvoiceRepository(session)
+        invoice = invoice_repo.get_by_id(invoice_id)
+        if invoice:
+            invoice_data = invoice.to_dict()
+
+    return templates.TemplateResponse("manual_entry.html", {
+        "request": request,
+        "invoice": invoice_data,
+        "document_url": "/static/placeholder.pdf",  # Placeholder for now
+        "document_type": "pdf"
+    })
+
+
+@app.post("/ui/manual-entry/submit")
+async def submit_manual_entry(
+    request: Request,
+    invoice_number: str = Form(...),
+    invoice_date: str = Form(...),
+    amount: float = Form(...),
+    country_code: str = Form(...),
+    category: str = Form(...),
+    customer_name: Optional[str] = Form(None),
+    transaction_id: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    session = Depends(get_db_session)
+):
+    """Submit manually entered invoice data"""
+    from ..core.calculator import VATCalculator
+
+    # Calculate VAT
+    vat_calculator = VATCalculator('config/vat_rates.json')
+    vat_result = vat_calculator.calculate_vat(amount, country_code, category)
+
+    # Create invoice
+    invoice_repo = InvoiceRepository(session)
+    invoice_data = {
+        'invoice_number': invoice_number,
+        'invoice_date': invoice_date,
+        'transaction_id': transaction_id or f"MANUAL-{invoice_number}",
+        'amount': amount,
+        'country_code': country_code,
+        'category': category,
+        'customer_name': customer_name,
+        'description': description,
+        'vat_rate': vat_result['vat_rate'],
+        'vat_amount': vat_result['vat_amount'],
+        'total_amount': vat_result['total_amount'],
+        'validation_status': 'valid',
+        'processing_status': 'completed'
+    }
+
+    # Auto-assign to VAT period
+    period_repo_session = session
+    from ..database.repositories import VATPeriodRepository
+    period_repo = VATPeriodRepository(period_repo_session)
+    period = period_repo.get_period_for_date(invoice_date)
+    if period:
+        invoice_data['vat_period_id'] = period.id
+
+    invoice = invoice_repo.create(invoice_data)
+
+    return templates.TemplateResponse("manual_entry.html", {
+        "request": request,
+        "success": True,
+        "message": f"Invoice {invoice_number} successfully created!",
+        "invoice": None,
+        "document_url": "/static/placeholder.pdf",
+        "document_type": "pdf"
+    })
+
+
+@app.get("/ui/reports", response_class=HTMLResponse)
+async def web_reports(request: Request):
+    """Web UI for report generation"""
+    # Get VAT periods for dropdown
+    vat_periods = period_service.get_all_periods(limit=100)
+
+    return templates.TemplateResponse("reports.html", {
+        "request": request,
+        "vat_periods": vat_periods
+    })
+
+
+@app.get("/api/reports/download")
+async def download_report(
+    format: str = Query(..., regex="^(excel|pdf)$"),
+    type: str = Query(..., regex="^(period|daterange|country|all)$"),
+    period_id: Optional[int] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    country_code: Optional[str] = None
+):
+    """Download report in Excel or PDF format"""
+    try:
+        if format == 'excel':
+            output = report_service.generate_excel_report(
+                report_type=type,
+                period_id=period_id,
+                start_date=start_date,
+                end_date=end_date,
+                country_code=country_code
+            )
+
+            filename = f"vat_report_{type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
+            return StreamingResponse(
+                output,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+        else:  # pdf
+            output = report_service.generate_pdf_report(
+                report_type=type,
+                period_id=period_id,
+                start_date=start_date,
+                end_date=end_date,
+                country_code=country_code
+            )
+
+            filename = f"vat_report_{type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
+            return StreamingResponse(
+                output,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+    except Exception as e:
+        logger.error(f"Report generation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Error handler

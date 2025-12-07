@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Manual Data Entry - VAT Pipeline{% endblock %}
+
+{% block extra_css %}
+<style>
+    .entry-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .document-preview {
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        min-height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .document-preview img {
+        max-width: 100%;
+        max-height: 800px;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .document-preview iframe {
+        width: 100%;
+        height: 800px;
+        border: none;
+        border-radius: 4px;
+    }
+
+    .entry-form {
+        background: white;
+    }
+
+    .required-field {
+        border-left: 3px solid #e74c3c;
+    }
+
+    .optional-field {
+        border-left: 3px solid #95a5a6;
+    }
+
+    @media (max-width: 968px) {
+        .entry-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>📝 Manual Invoice Data Entry</h2>
+    {% if invoice %}
+    <div class="alert alert-info">
+        <strong>Invoice ID:</strong> {{ invoice.invoice_number }} |
+        <strong>Original Error:</strong> {{ invoice.error_message }}
+    </div>
+    {% endif %}
+</div>
+
+<div class="entry-container">
+    <!-- Document Preview -->
+    <div>
+        <div class="card">
+            <h2>📄 Document Preview</h2>
+        </div>
+        <div class="document-preview">
+            {% if document_url %}
+                {% if document_type == 'pdf' %}
+                <iframe src="{{ document_url }}"></iframe>
+                {% else %}
+                <img src="{{ document_url }}" alt="Invoice Document">
+                {% endif %}
+            {% else %}
+            <div style="text-align: center; color: #95a5a6;">
+                <p style="font-size: 3rem;">📄</p>
+                <p>No document preview available</p>
+                <p><small>Upload a document or enter details manually</small></p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Entry Form -->
+    <div>
+        <div class="card entry-form">
+            <h2>✍️ Invoice Details</h2>
+            <form action="/ui/manual-entry/submit" method="POST">
+                {% if invoice %}
+                <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="invoice_number">Invoice Number *</label>
+                    <input type="text"
+                           id="invoice_number"
+                           name="invoice_number"
+                           class="required-field"
+                           value="{{ invoice.invoice_number if invoice else '' }}"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="invoice_date">Invoice Date *</label>
+                    <input type="date"
+                           id="invoice_date"
+                           name="invoice_date"
+                           class="required-field"
+                           value="{{ invoice.invoice_date if invoice else '' }}"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">Amount (excluding VAT) *</label>
+                    <input type="number"
+                           id="amount"
+                           name="amount"
+                           step="0.01"
+                           class="required-field"
+                           value="{{ invoice.amount if invoice else '' }}"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="currency">Currency *</label>
+                    <select id="currency" name="currency" class="required-field" required>
+                        <option value="EUR" {% if invoice and invoice.currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
+                        <option value="USD" {% if invoice and invoice.currency == 'USD' %}selected{% endif %}>USD ($)</option>
+                        <option value="GBP" {% if invoice and invoice.currency == 'GBP' %}selected{% endif %}>GBP (£)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="country_code">Country *</label>
+                    <select id="country_code" name="country_code" class="required-field" required>
+                        <option value="">-- Select Country --</option>
+                        <option value="AT" {% if invoice and invoice.country_code == 'AT' %}selected{% endif %}>Austria (AT)</option>
+                        <option value="BE" {% if invoice and invoice.country_code == 'BE' %}selected{% endif %}>Belgium (BE)</option>
+                        <option value="DE" {% if invoice and invoice.country_code == 'DE' %}selected{% endif %}>Germany (DE)</option>
+                        <option value="ES" {% if invoice and invoice.country_code == 'ES' %}selected{% endif %}>Spain (ES)</option>
+                        <option value="FR" {% if invoice and invoice.country_code == 'FR' %}selected{% endif %}>France (FR)</option>
+                        <option value="GB" {% if invoice and invoice.country_code == 'GB' %}selected{% endif %}>United Kingdom (GB)</option>
+                        <option value="IT" {% if invoice and invoice.country_code == 'IT' %}selected{% endif %}>Italy (IT)</option>
+                        <option value="NL" {% if invoice and invoice.country_code == 'NL' %}selected{% endif %}>Netherlands (NL)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" class="required-field" required>
+                        <option value="standard" {% if invoice and invoice.category == 'standard' %}selected{% endif %}>Standard</option>
+                        <option value="food" {% if invoice and invoice.category == 'food' %}selected{% endif %}>Food & Beverages</option>
+                        <option value="books" {% if invoice and invoice.category == 'books' %}selected{% endif %}>Books</option>
+                        <option value="medical" {% if invoice and invoice.category == 'medical' %}selected{% endif %}>Medical</option>
+                        <option value="transport" {% if invoice and invoice.category == 'transport' %}selected{% endif %}>Transport</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="customer_name">Customer Name</label>
+                    <input type="text"
+                           id="customer_name"
+                           name="customer_name"
+                           class="optional-field"
+                           value="{{ invoice.customer_name if invoice else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="customer_vat_number">Customer VAT Number</label>
+                    <input type="text"
+                           id="customer_vat_number"
+                           name="customer_vat_number"
+                           class="optional-field"
+                           value="{{ invoice.customer_vat_number if invoice else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description"
+                              name="description"
+                              rows="3"
+                              class="optional-field">{{ invoice.description if invoice else '' }}</textarea>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">
+                        ✓ Save & Calculate VAT
+                    </button>
+                    <a href="/ui/errors" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-calculate VAT preview (optional enhancement)
+    const amount = document.getElementById('amount');
+    const country = document.getElementById('country_code');
+    const category = document.getElementById('category');
+
+    function updateVATPreview() {
+        // This could show a live VAT calculation preview
+        // For now, it's a placeholder for future enhancement
+    }
+
+    if (amount && country && category) {
+        amount.addEventListener('input', updateVATPreview);
+        country.addEventListener('change', updateVATPreview);
+        category.addEventListener('change', updateVATPreview);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Failed Invoices - VAT Pipeline{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>⚠️ Failed Invoice Extractions</h2>
+    <p>These invoices failed automatic processing and require manual review.</p>
+
+    {% if failed_invoices %}
+    <table>
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Country</th>
+                <th>Error</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in failed_invoices %}
+            <tr>
+                <td><strong>{{ invoice.invoice_number }}</strong></td>
+                <td>{{ invoice.invoice_date }}</td>
+                <td>€{{ "%.2f"|format(invoice.amount) }}</td>
+                <td>{{ invoice.country_code }}</td>
+                <td>
+                    <small style="color: #e74c3c;">{{ invoice.error_message | truncate(50) }}</small>
+                </td>
+                <td>
+                    <span class="badge badge-danger">{{ invoice.validation_status }}</span>
+                </td>
+                <td>
+                    <a href="/ui/manual-entry/{{ invoice.id }}" class="btn btn-sm">
+                        Fix Now
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-success">
+        <strong>✓ All Clear!</strong> No failed invoices at this time.
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>📊 Error Statistics</h2>
+    <div class="grid">
+        <div class="stat-card" style="border-left-color: #e74c3c;">
+            <h3>Total Failures</h3>
+            <div class="value">{{ total_failed }}</div>
+        </div>
+        <div class="stat-card" style="border-left-color: #f39c12;">
+            <h3>Pending Review</h3>
+            <div class="value">{{ pending_review }}</div>
+        </div>
+        <div class="stat-card" style="border-left-color: #27ae60;">
+            <h3>Resolved</h3>
+            <div class="value">{{ resolved }}</div>
+        </div>
+        <div class="stat-card" style="border-left-color: #3498db;">
+            <h3>Success Rate</h3>
+            <div class="value">{{ success_rate }}%</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - VAT Pipeline{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>📊 Dashboard</h2>
+    <p>Overview of your VAT Integration Pipeline</p>
+</div>
+
+<div class="grid">
+    <div class="stat-card">
+        <h3>{{ total_invoices }}</h3>
+        <p>Total Invoices</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>€{{ "%.2f"|format(stats.total_vat_amount or 0) }}</h3>
+        <p>Total VAT</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>€{{ "%.2f"|format(stats.total_base_amount or 0) }}</h3>
+        <p>Total Base Amount</p>
+    </div>
+
+    <div class="stat-card" style="background: {% if failed_count > 0 %}#fee;{% else %}#efe;{% endif %}">
+        <h3>{{ failed_count }}</h3>
+        <p>Failed Extractions</p>
+        {% if failed_count > 0 %}
+        <a href="/ui/errors" class="btn btn-sm" style="margin-top: 0.5rem;">View Errors</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="card">
+        <h3>Recent Invoices</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Date</th>
+                    <th>Country</th>
+                    <th>Amount</th>
+                    <th>VAT</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in recent_invoices %}
+                <tr>
+                    <td><strong>{{ invoice.invoice_number }}</strong></td>
+                    <td>{{ invoice.invoice_date }}</td>
+                    <td>{{ invoice.country_code }}</td>
+                    <td>€{{ "%.2f"|format(invoice.amount) }}</td>
+                    <td>€{{ "%.2f"|format(invoice.vat_amount) }}</td>
+                    <td>
+                        {% if invoice.validation_status == 'valid' %}
+                        <span class="badge badge-success">Valid</span>
+                        {% else %}
+                        <span class="badge badge-danger">Invalid</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>VAT Periods</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Invoices</th>
+                    <th>Total VAT</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for period in vat_periods %}
+                <tr>
+                    <td><strong>{{ period.period_name }}</strong></td>
+                    <td>{{ period.total_invoices or 0 }}</td>
+                    <td>€{{ "%.2f"|format(period.total_vat_amount or 0) }}</td>
+                    <td>
+                        {% if period.status == 'open' %}
+                        <span class="badge badge-success">Open</span>
+                        {% elif period.status == 'closed' %}
+                        <span class="badge badge-warning">Closed</span>
+                        {% elif period.status == 'submitted' %}
+                        <span class="badge badge-info">Submitted</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Quick Actions</h3>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="/ui/manual-entry" class="btn">📝 Manual Entry</a>
+        <a href="/ui/reports" class="btn">📊 Generate Reports</a>
+        <a href="/ui/errors" class="btn btn-danger">⚠️ View Failed Invoices</a>
+        <a href="/docs" class="btn btn-secondary">📖 API Documentation</a>
+    </div>
+</div>
+{% endblock %}
