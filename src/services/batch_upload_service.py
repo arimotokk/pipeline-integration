@@ -83,25 +83,26 @@ class BatchUploadService:
             }
 
             batch = batch_repo.create(batch_data)
+            batch_db_id = batch.id  # Save ID before session closes
 
         try:
             # Update status to processing
             with self.db_manager.session_scope() as session:
                 batch_repo = BatchUploadRepository(session)
-                batch_repo.update_status(batch.id, 'processing')
+                batch_repo.update_status(batch_db_id, 'processing')
 
             # Read and process file
             result = self._process_batch_file(
                 file_path,
-                batch.id,
+                batch_db_id,
                 auto_assign_period
             )
 
             # Update final status
             with self.db_manager.session_scope() as session:
                 batch_repo = BatchUploadRepository(session)
-                batch_repo.update_status(batch.id, 'completed')
-                batch_repo.update(batch.id, {
+                batch_repo.update_status(batch_db_id, 'completed')
+                batch_repo.update(batch_db_id, {
                     'total_records': result['total'],
                     'processed_records': result['processed'],
                     'successful_records': result['successful'],
@@ -125,7 +126,7 @@ class BatchUploadService:
             # Update status to failed
             with self.db_manager.session_scope() as session:
                 batch_repo = BatchUploadRepository(session)
-                batch_repo.update_status(batch.id, 'failed', error_message=str(e))
+                batch_repo.update_status(batch_db_id, 'failed', error_message=str(e))
 
             return {
                 'batch_id': batch_id,
