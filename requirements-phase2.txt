@@ -1,0 +1,20 @@
+# Phase 2 Requirements - Batch Upload, VAT Periods, Invoice History
+
+# Core dependencies from Phase 1
+pyyaml>=6.0
+pandas>=2.0.0
+python-dateutil>=2.8.2
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Phase 2 - REST API
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+python-multipart>=0.0.6
+
+# Phase 2 - Database
+sqlalchemy>=2.0.25
+
+# Phase 2 - Additional utilities
+openpyxl>=3.1.2
