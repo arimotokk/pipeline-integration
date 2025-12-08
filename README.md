@@ -59,6 +59,43 @@ python -m src.pipeline.runner --input data/input/sample_transactions.csv --outpu
 - Error handling and logging
 - Output generation for downstream systems
 
+## Screenshots
+
+### 1. Batch Invoice Upload
+*Upload multiple invoices with VAT period selection*
+
+![Batch Upload](screenshots/01_batch_upload.png)
+
+### 2. Extraction Results
+*AI-powered invoice data extraction with VAT calculations*
+
+![Extraction Results](screenshots/02_extraction_results.png)
+
+### 3. Invoice History with Error Flagging
+*View all invoices with status indicators (Success/Error)*
+
+![Invoice History](screenshots/03_invoice_history.png)
+
+### 4. VAT Summary by Period
+*Net VAT position grouped by quarterly periods*
+
+![VAT Summary](screenshots/04_vat_summary.png)
+
+### 5. Error Dashboard
+*Review and manually correct failed extractions*
+
+![Error Dashboard](screenshots/05_error_dashboard.png)
+
+### 6. Manual Entry Form
+*Edit invoice data with validation*
+
+![Manual Entry](screenshots/06_manual_entry.png)
+
+### 7. Excel Report Download
+*Professional Excel reports with multiple sheets*
+
+![Excel Report](screenshots/07_excel_report.png)
+
 ## Project Structure
 ```
 pipeline-integration/
