@@ -1,0 +1,54 @@
+SALES INVOICE
+
+Invoice Number: SI-Q4-2024-001
+Invoice Date: 28 November 2024
+
+From:
+Web Development Agency Ltd
+22 Patrick Street
+Cork, Ireland
+VAT Registration: IE7777777M
+
+To:
+Healthcare Solutions Ltd
+98 Hospital Road
+Dublin 8, Ireland
+
+ITEMS:
+------
+Custom Website Development
+Healthcare portal with patient booking system
+Quantity: 1
+Unit Price: €18,500.00
+Subtotal: €18,500.00
+
+Mobile App Development (iOS & Android)
+Patient management application
+Quantity: 1
+Unit Price: €12,000.00
+Subtotal: €12,000.00
+
+Annual Maintenance & Support Package
+24/7 technical support and updates
+Quantity: 1
+Unit Price: €3,600.00
+Subtotal: €3,600.00
+
+SSL Certificates & Security Audit
+Premium security package
+Quantity: 1
+Unit Price: €1,400.00
+Subtotal: €1,400.00
+
+------
+Net Amount: €35,500.00
+VAT (23%): €8,165.00
+------
+TOTAL DUE: €43,665.00
+
+Payment Terms: 50% upfront, 50% on completion
+Due Date: 15 December 2024
+
+Bank Details:
+IBAN: IE88 AIBK 9322 1234 5678 90
+BIC: AIBKIE2D

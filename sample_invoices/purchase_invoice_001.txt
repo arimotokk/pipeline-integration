@@ -1,0 +1,14 @@
+PURCHASE INVOICE
+
+Invoice Number: SUPP-2024-101
+Date: 2024-04-05
+Supplier: Office Supplies Ireland
+Address: 22 Dame Street, Dublin 2
+
+Items:
+- Office Furniture: €1,500.00
+- Stationery: €300.00
+
+Net Amount: €1,800.00
+VAT (23%): €414.00
+Total Amount: €2,214.00

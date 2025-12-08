@@ -1,0 +1,48 @@
+SALES INVOICE
+
+Invoice Number: SI-Q3-2024-001
+Invoice Date: 15 July 2024
+
+From:
+Tech Solutions Ireland Ltd
+Unit 12, Business Park
+Dublin 15, Ireland
+VAT Registration: IE9876543T
+
+To:
+Enterprise Systems Ltd
+45 Commerce Street
+Cork, Ireland
+
+ITEMS:
+------
+Cloud Server Hosting - Premium Package
+Annual subscription (July 2024 - July 2025)
+Quantity: 1
+Unit Price: €4,800.00
+Subtotal: €4,800.00
+
+Database Management Services
+Monthly support package x 12 months
+Quantity: 1
+Unit Price: €2,400.00
+Subtotal: €2,400.00
+
+Professional Consulting Services
+System architecture review (40 hours @ €150/hr)
+Quantity: 1
+Unit Price: €6,000.00
+Subtotal: €6,000.00
+
+------
+Net Amount: €13,200.00
+VAT (23%): €3,036.00
+------
+TOTAL DUE: €16,236.00
+
+Payment Terms: Net 30 days
+Due Date: 14 August 2024
+
+Bank Details:
+IBAN: IE29 AIBK 9311 5212 3456 78
+BIC: AIBKIE2D

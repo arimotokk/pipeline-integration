@@ -1,0 +1,58 @@
+PURCHASE INVOICE
+
+Invoice Number: PI-Q4-2024-002
+Invoice Date: 05 December 2024
+
+From:
+Professional Training Services Ltd
+44 Learning Center Avenue
+Galway, Ireland
+VAT Registration: IE9999999R
+
+To:
+Digital Marketing Pro Ltd
+88 Grafton Street
+Dublin 2, Ireland
+
+ITEMS:
+------
+Advanced Digital Marketing Certification Course
+3-day intensive workshop for 5 staff members
+Dates: 10-12 December 2024
+Quantity: 5
+Unit Price: €850.00
+Subtotal: €4,250.00
+
+Google Analytics 4 Training
+Full-day session for marketing team
+Date: 13 December 2024
+Quantity: 8
+Unit Price: €320.00
+Subtotal: €2,560.00
+
+Training Materials & Certification Exam Fees
+Course materials, exam vouchers, certificates
+Quantity: 13
+Unit Price: €95.00
+Subtotal: €1,235.00
+
+Catering & Refreshments
+Lunch and refreshments for all training days
+Quantity: 4
+Unit Price: €180.00
+Subtotal: €720.00
+
+------
+Net Amount: €8,765.00
+VAT (23%): €2,015.95
+------
+TOTAL DUE: €10,780.95
+
+Payment Terms: Payment required before training start date
+Due Date: 09 December 2024
+
+Bank Details:
+IBAN: IE77 AIBK 9344 5566 7788 99
+BIC: AIBKIE2D
+
+Please confirm attendance numbers 48 hours before training.

@@ -1,0 +1,57 @@
+PURCHASE INVOICE
+
+Invoice Number: PI-Q3-2024-001
+Invoice Date: 10 September 2024
+
+From:
+Office Equipment Suppliers Ltd
+65 Industrial Estate
+Limerick, Ireland
+VAT Registration: IE5555555P
+
+To:
+Tech Solutions Ireland Ltd
+Unit 12, Business Park
+Dublin 15, Ireland
+
+ITEMS:
+------
+Dell Latitude Laptops (15" Business Model)
+For development team
+Quantity: 8
+Unit Price: €1,200.00
+Subtotal: €9,600.00
+
+HP Color LaserJet Printers
+Network-enabled office printers
+Quantity: 3
+Unit Price: €850.00
+Subtotal: €2,550.00
+
+Ergonomic Office Chairs
+Herman Miller Aeron chairs
+Quantity: 10
+Unit Price: €980.00
+Subtotal: €9,800.00
+
+Standing Desks with Electric Motors
+Height-adjustable workstations
+Quantity: 6
+Unit Price: €750.00
+Subtotal: €4,500.00
+
+------
+Net Amount: €26,450.00
+VAT (23%): €6,083.50
+------
+TOTAL DUE: €32,533.50
+
+Payment Terms: Net 30 days
+Due Date: 10 October 2024
+
+Bank Details:
+IBAN: IE12 ULST 9012 3456 7890 12
+BIC: ULSBIE2D
+
+Please remit payment to the above account.
+Thank you for your business.

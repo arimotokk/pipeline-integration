@@ -1,0 +1,13 @@
+PURCHASE INVOICE
+
+Invoice Number: SUPP-2024-102
+Date: 2024-05-12
+Supplier: Cloud Hosting Ltd
+Address: 15 Baggot Street, Dublin 4
+
+Items:
+- Server Hosting (3 months): €900.00
+
+Net Amount: €900.00
+VAT (23%): €207.00
+Total Amount: €1,107.00

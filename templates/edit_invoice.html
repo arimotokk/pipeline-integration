@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Invoice - VAT Integration Pipeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: #0c5460;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: #721c24;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        label .required {
+            color: #f44336;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            margin-left: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-group {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>✏️ Edit Invoice</h1>
+            <p class="subtitle">Editing invoice: <strong>{{ invoice.file_name }}</strong></p>
+
+            {% if error %}
+            <div class="alert-error">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="/edit/submit" method="POST">
+                <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+
+                <div class="form-group">
+                    <label>Invoice Number <span class="required">*</span></label>
+                    <input type="text" name="invoice_number" required placeholder="e.g., INV-2025-001" 
+                           value="{{ invoice.invoice_number or '' }}">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date <span class="required">*</span></label>
+                        <input type="date" name="date" required value="{{ invoice.date or '' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Transaction Type <span class="required">*</span></label>
+                        <select name="invoice_type" required>
+                            <option value="">-- Select Type --</option>
+                            <option value="sales" {% if invoice.invoice_type == 'sales' %}selected{% endif %}>Sales (Output VAT)</option>
+                            <option value="purchase" {% if invoice.invoice_type == 'purchase' %}selected{% endif %}>Purchase (Input VAT)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Supplier/Customer Name</label>
+                    <input type="text" name="supplier_customer" placeholder="Company or person name" 
+                           value="{{ invoice.supplier_customer or '' }}">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Net Amount (£) <span class="required">*</span></label>
+                        <input type="number" step="0.01" name="net_amount" required placeholder="0.00" 
+                               value="{{ '%.2f'|format(invoice.net_amount) }}">
+                        <p class="help-text">Amount before VAT</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>VAT Amount (£) <span class="required">*</span></label>
+                        <input type="number" step="0.01" name="vat_amount" required placeholder="0.00" 
+                               value="{{ '%.2f'|format(invoice.vat_amount) }}">
+                        <p class="help-text">VAT charged (usually 20%)</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Total Amount (£) <span class="required">*</span></label>
+                    <input type="number" step="0.01" name="total_amount" required placeholder="0.00" 
+                           value="{{ '%.2f'|format(invoice.total_amount) }}">
+                    <p class="help-text">Net + VAT</p>
+                </div>
+
+                <div class="form-group">
+                    <label>VAT Period <span class="required">*</span></label>
+                    <select name="vat_period" required>
+                        <option value="">-- Select Period --</option>
+                        {% for period in vat_periods %}
+                        <option value="{{ period }}" {% if invoice.vat_period == period %}selected{% endif %}>{{ period }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="/history" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

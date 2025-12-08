@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Review - VAT Integration Pipeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            color: #856404;
+        }
+
+        .alert-warning strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .badge-pending {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h2 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .btn-edit {
+            background: #2196f3;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .btn-edit:hover {
+            background: #1976d2;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .error-details {
+            font-size: 12px;
+            color: #666;
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚠️ Error Review Dashboard</h1>
+            <div class="nav-buttons">
+                <a href="/" class="btn btn-secondary">Upload</a>
+                <a href="/history" class="btn btn-secondary">History</a>
+                <a href="/vat-summary" class="btn btn-primary">VAT Summary</a>
+            </div>
+        </div>
+
+        <div class="content">
+            {% if error_invoices %}
+                <div class="alert-warning">
+                    <strong>📋 Action Required</strong>
+                    <p>The following invoices could not be processed automatically. Please review and manually enter the correct data.</p>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ error_invoices|length }}</div>
+                        <div class="stat-label">Error Invoices</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ error_invoices|selectattr('status', 'equalto', 'error')|list|length }}</div>
+                        <div class="stat-label">Critical Errors</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ error_invoices|selectattr('status', 'equalto', 'pending_review')|list|length }}</div>
+                        <div class="stat-label">Pending Review</div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Status</th>
+                                <th>Invoice #</th>
+                                <th>Date</th>
+                                <th>Supplier/Customer</th>
+                                <th>Net Amount</th>
+                                <th>VAT Amount</th>
+                                <th>Error Details</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in error_invoices %}
+                            <tr>
+                                <td><strong>{{ invoice.file_name }}</strong></td>
+                                <td>
+                                    <span class="badge {% if invoice.status == 'error' %}badge-error{% else %}badge-pending{% endif %}">
+                                        {% if invoice.status == 'error' %}✗ Error{% else %}⚠ Pending{% endif %}
+                                    </span>
+                                </td>
+                                <td>{{ invoice.invoice_number or 'N/A' }}</td>
+                                <td>{{ invoice.date or 'N/A' }}</td>
+                                <td>{{ invoice.supplier_customer or 'N/A' }}</td>
+                                <td>£{{ "%.2f"|format(invoice.net_amount) }}</td>
+                                <td>£{{ "%.2f"|format(invoice.vat_amount) }}</td>
+                                <td>
+                                    <div class="error-details">
+                                        {{ invoice.parsing_error or 'Missing or invalid data' }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="/edit/{{ invoice.id }}" class="btn-edit">Fix Invoice</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">✅</div>
+                    <h2>No Errors Found</h2>
+                    <p>All invoices have been processed successfully!</p>
+                    <a href="/history" class="btn btn-primary" style="margin-top: 20px;">View Invoice History</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

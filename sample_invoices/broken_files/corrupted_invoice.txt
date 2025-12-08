@@ -1,0 +1,34 @@
+XjK9$mPq#zLw@3nF*8vT&yR!hB^2sD%4gC
+
+INVOICE????? ~~~~ ERROR DATA CORRUPTION ~~~~
+
+FrØm: §§§ ¶¶¶ ƒƒƒ ∂∂∂
+T0: [UNREADABLE CHARACTERS] ™£¢∞§¶•ªº
+
+##DATA##BLOCK##CORRUPTED##
+
+01010101 00110011 11001100 <- BINARY NOISE
+àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ
+
+Invoice Num: ????-$$$$-####-!!!!
+Dat3: 99/99/9999
+
+1t3ms: XXXXXXXXXXXXXXXXXX
+- Pr0duct A: €€€€€.##
+- Pr0duct B: $$$$.^^
+- Pr0duct C: ££££.@@
+
+[MEMORY ALLOCATION ERROR AT LINE 42]
+
+T0tal: €♠♣♥♦.♪♫
+VAT: ◊◊◊◊◊
+AMOΩNT: ∆∆∆∆∆
+
+~!@#$%^&*()_+{}|:"<>?`-=[]\;',./
+0xDEADBEEF 0xCAFEBABE 0xFEEDFACE
+
+{corrupt3d file content - cannot parse invoice data}
+{critical error: invoice structure not found}
+{system message: data recovery impossible}
+
+END OF CORRUPTED FILE --- PARSING FAILED

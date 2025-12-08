@@ -1,0 +1,14 @@
+SALES INVOICE
+
+Invoice Number: INV-2024-003
+Date: 2024-03-10
+Customer: Irish Retail Group
+Address: 88 Henry Street, Dublin 1
+
+Items:
+- Monthly Support: €1,200.00
+- Training Session: €800.00
+
+Net Amount: €2,000.00
+VAT (23%): €460.00
+Total Amount: €2,460.00

@@ -1,0 +1,13 @@
+SALES INVOICE
+
+Invoice Number: INV-2024-002
+Date: 2024-02-20
+Customer: Green Energy Co
+Address: 45 O'Connell Street, Dublin 1
+
+Items:
+- Consulting Services: €3,500.00
+
+Net Amount: €3,500.00
+VAT (23%): €805.00
+Total Amount: €4,305.00

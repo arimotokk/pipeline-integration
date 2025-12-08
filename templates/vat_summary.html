@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAT Summary - VAT Integration Pipeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .period-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .period-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .period-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .invoice-count {
+            background: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .alert-warning strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .btn-warning {
+            background: #ff9800;
+            color: white;
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .vat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .vat-item {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .vat-item-sales {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .vat-item-purchase {
+            background: linear-gradient(135deg, #f44336 0%, #e53935 100%);
+            color: white;
+        }
+
+        .vat-item-net {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .vat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .vat-amount {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .net-position {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .net-position-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .net-position-amount {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .net-position-description {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 12px;
+            padding: 60px 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h2 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>VAT Summary by Period</h1>
+            <div class="nav-buttons">
+                <a href="/" class="btn btn-secondary">Upload</a>
+                <a href="/history" class="btn btn-secondary">History</a>
+                <a href="/errors" class="btn btn-secondary">Failed Invoices</a>
+            </div>
+        </div>
+
+        {% if error_count > 0 %}
+        <div class="alert-warning">
+            <strong>⚠️ Warning: {{ error_count }} invoice{{ 's' if error_count != 1 else '' }} flagged as errors</strong>
+            <p>These invoices have been excluded from VAT calculations due to missing or invalid data.</p>
+            <a href="/error-review" class="btn btn-warning">Review Error Invoices</a>
+        </div>
+        {% endif %}
+
+        {% if summary %}
+        <div class="period-card">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <a href="/download-excel" class="btn btn-primary" style="margin: 0 10px;">📊 Download Excel Report</a>
+                <a href="/download-pdf" class="btn btn-primary" style="margin: 0 10px;">📄 Download PDF Report</a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if summary %}
+            {% for period in summary %}
+            <div class="period-card">
+                <div class="period-header">
+                    <div class="period-title">{{ period.vat_period }}</div>
+                    <div class="invoice-count">{{ period.invoice_count }} invoice{{ 's' if period.invoice_count != 1 else '' }}</div>
+                </div>
+
+                <div class="vat-grid">
+                    <div class="vat-item vat-item-sales">
+                        <div class="vat-label">Sales VAT (Output)</div>
+                        <div class="vat-amount">£{{ "%.2f"|format(period.sales_vat) }}</div>
+                    </div>
+
+                    <div class="vat-item vat-item-purchase">
+                        <div class="vat-label">Purchase VAT (Input)</div>
+                        <div class="vat-amount">£{{ "%.2f"|format(period.purchase_vat) }}</div>
+                    </div>
+
+                    <div class="vat-item vat-item-net">
+                        <div class="vat-label">Net VAT Position</div>
+                        <div class="vat-amount">£{{ "%.2f"|format(period.net_vat) }}</div>
+                    </div>
+                </div>
+
+                <div class="net-position">
+                    <div class="net-position-label">Amount Due to HMRC</div>
+                    <div class="net-position-amount">
+                        {% if period.net_vat > 0 %}
+                            £{{ "%.2f"|format(period.net_vat) }}
+                        {% elif period.net_vat < 0 %}
+                            -£{{ "%.2f"|format(-period.net_vat) }}
+                        {% else %}
+                            £0.00
+                        {% endif %}
+                    </div>
+                    <div class="net-position-description">
+                        {% if period.net_vat > 0 %}
+                            You owe this amount to HMRC for {{ period.vat_period }}
+                        {% elif period.net_vat < 0 %}
+                            HMRC owes you this amount (reclaim) for {{ period.vat_period }}
+                        {% else %}
+                            No VAT due for {{ period.vat_period }}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <strong>Calculation:</strong> Sales VAT (£{{ "%.2f"|format(period.sales_vat) }}) 
+                    minus Purchase VAT (£{{ "%.2f"|format(period.purchase_vat) }}) 
+                    = Net Position (£{{ "%.2f"|format(period.net_vat) }})
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <h2>No VAT Data Yet</h2>
+                <p>Upload invoices to see your VAT summary</p>
+                <a href="/" class="btn btn-primary" style="margin-top: 20px;">Upload Invoice</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

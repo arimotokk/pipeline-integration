@@ -1,0 +1,56 @@
+PURCHASE INVOICE
+
+Invoice Number: PI-Q4-2024-001
+Invoice Date: 15 October 2024
+
+From:
+Cloud Services Provider Ireland Ltd
+Technology Park
+Sandyford, Dublin 18, Ireland
+VAT Registration: IE8888888K
+
+To:
+Tech Solutions Ireland Ltd
+Unit 12, Business Park
+Dublin 15, Ireland
+
+ITEMS:
+------
+AWS Cloud Infrastructure Services
+EC2 instances, S3 storage, RDS databases
+Period: October 2024
+Quantity: 1
+Unit Price: €4,250.00
+Subtotal: €4,250.00
+
+Microsoft 365 Business Premium Licenses
+Annual subscription for 50 users
+Quantity: 50
+Unit Price: €96.00
+Subtotal: €4,800.00
+
+Cloudflare Enterprise CDN Service
+Global content delivery network
+Annual subscription
+Quantity: 1
+Unit Price: €2,400.00
+Subtotal: €2,400.00
+
+Backup & Disaster Recovery Solution
+Automated daily backups with 90-day retention
+Quantity: 1
+Unit Price: €1,800.00
+Subtotal: €1,800.00
+
+------
+Net Amount: €13,250.00
+VAT (23%): €3,047.50
+------
+TOTAL DUE: €16,297.50
+
+Payment Terms: Net 30 days
+Due Date: 14 November 2024
+
+Bank Details:
+IBAN: IE45 BOFI 9033 4567 8901 23
+BIC: BOFIIE2D

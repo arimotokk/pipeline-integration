@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAT Integration Pipeline - Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px 12px 0 0;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .file-info {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .results-section {
+            background: white;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .data-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .data-row:hover {
+            background: #e9ecef;
+        }
+
+        .data-label {
+            color: #666;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .data-value {
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .vat-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .vat-summary .section-title {
+            color: white;
+            border-bottom-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .vat-summary .data-row {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .vat-summary .data-row:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .vat-summary .data-label,
+        .vat-summary .data-value {
+            color: white;
+        }
+
+        .vat-impact {
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .vat-impact.positive {
+            color: #4caf50;
+        }
+
+        .vat-impact.negative {
+            color: #f44336;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-sales {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-purchase {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .actions {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            padding: 20px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{% if batch_mode %}Batch Processing Complete{% else %}Invoice Processing Complete{% endif %}</h1>
+            <div class="file-info">
+                {% if batch_mode %}
+                    <strong>Period:</strong> {{ vat_period }} | 
+                    <span class="badge {% if transaction_type == 'Sales' %}badge-sales{% else %}badge-purchase{% endif %}">
+                        {{ transaction_type }}
+                    </span> | 
+                    <strong>{{ invoices|length }} invoice(s) processed</strong>
+                {% else %}
+                    <strong>File:</strong> {{ data.file_name }} | 
+                    <span class="badge {% if data.transaction_type == 'Sales' %}badge-sales{% else %}badge-purchase{% endif %}">
+                        {{ data.transaction_type }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="results-section">
+            {% if batch_mode %}
+                {% if errors %}
+                <div class="highlight" style="background: #fee; border-left-color: #f44336; color: #c33; margin-bottom: 20px;">
+                    <strong>⚠️ Errors:</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        {% for error in errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p style="margin-top: 15px;">
+                        <a href="/errors" style="color: #f44336; font-weight: 600; text-decoration: underline;">
+                            → View Failed Invoices and Enter Data Manually
+                        </a>
+                    </p>
+                </div>
+                {% endif %}
+
+                <div class="section-title">Processed Invoices</div>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <thead>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
+                                <th style="padding: 12px; text-align: left;">File</th>
+                                <th style="padding: 12px; text-align: left;">Invoice #</th>
+                                <th style="padding: 12px; text-align: right;">Net</th>
+                                <th style="padding: 12px; text-align: right;">VAT</th>
+                                <th style="padding: 12px; text-align: right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in invoices %}
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 12px;">{{ invoice.file_name }}</td>
+                                <td style="padding: 12px;">{{ invoice.invoice_number or 'N/A' }}</td>
+                                <td style="padding: 12px; text-align: right;">£{{ "%.2f"|format(invoice.net_amount) }}</td>
+                                <td style="padding: 12px; text-align: right;">£{{ "%.2f"|format(invoice.vat_amount) }}</td>
+                                <td style="padding: 12px; text-align: right;">£{{ "%.2f"|format(invoice.total_amount) }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr style="background: #f8f9fa; font-weight: 600;">
+                                <td style="padding: 12px;" colspan="2">TOTAL</td>
+                                <td style="padding: 12px; text-align: right;">£{{ "%.2f"|format(invoices|sum(attribute='net_amount')) }}</td>
+                                <td style="padding: 12px; text-align: right;">£{{ "%.2f"|format(invoices|sum(attribute='vat_amount')) }}</td>
+                                <td style="padding: 12px; text-align: right;">£{{ "%.2f"|format(invoices|sum(attribute='total_amount')) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight" style="margin-top: 20px;">
+                    <strong>✓ Success!</strong> All invoices have been saved to the database and assigned to <strong>{{ vat_period }}</strong>.
+                </div>
+
+            {% else %}
+                <div class="section-title">Extracted Invoice Data</div>
+                <div class="data-grid">
+                    <div class="data-row">
+                        <span class="data-label">Invoice Number:</span>
+                        <span class="data-value">{{ data.invoice_number or 'N/A' }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Date:</span>
+                        <span class="data-value">{{ data.date or 'N/A' }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Supplier/Customer:</span>
+                        <span class="data-value">{{ data.supplier_name or 'N/A' }}</span>
+                    </div>
+                </div>
+
+                <div class="vat-summary">
+                    <div class="section-title">VAT Calculation</div>
+                    <div class="data-grid">
+                        <div class="data-row">
+                            <span class="data-label">Net Amount:</span>
+                            <span class="data-value">£{{ "%.2f"|format(data.net_amount) }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">VAT ({{ data.vat_rate }}%):</span>
+                            <span class="data-value">£{{ "%.2f"|format(data.vat_amount) }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Total Amount:</span>
+                            <span class="data-value">£{{ "%.2f"|format(data.total_amount) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="highlight">
+                        <strong>{{ data.vat_position }}</strong>
+                    </div>
+
+                    <div class="vat-impact {% if data.transaction_type == 'Sales' %}positive{% else %}negative{% endif %}">
+                        {{ data.vat_impact }}
+                    </div>
+                </div>
+
+                <div class="section-title">VAT Position Summary</div>
+                <p style="color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+                    {% if data.transaction_type == 'Sales' %}
+                        This is a <strong>Sales Invoice</strong>. The VAT amount of £{{ "%.2f"|format(data.vat_amount) }} 
+                        is Output VAT that you owe to HMRC. This increases your VAT liability.
+                    {% else %}
+                        This is a <strong>Purchase Invoice</strong>. The VAT amount of £{{ "%.2f"|format(data.vat_amount) }} 
+                        is Input VAT that you can reclaim from HMRC. This reduces your VAT liability.
+                    {% endif %}
+                </p>
+            {% endif %}
+        </div>
+
+        <div class="actions">
+            <a href="/" class="btn btn-primary">Upload More Invoices</a>
+            <a href="/history" class="btn btn-secondary">View History</a>
+            <a href="/vat-summary" class="btn btn-secondary">VAT Summary</a>
+        </div>
+    </div>
+</body>
+</html>

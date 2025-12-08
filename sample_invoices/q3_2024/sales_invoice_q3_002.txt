@@ -1,0 +1,54 @@
+SALES INVOICE
+
+Invoice Number: SI-Q3-2024-002
+Invoice Date: 22 August 2024
+
+From:
+Digital Marketing Pro Ltd
+88 Grafton Street
+Dublin 2, Ireland
+VAT Registration: IE1234567W
+
+To:
+Fashion Retail Group
+12 Main Street
+Galway, Ireland
+
+ITEMS:
+------
+Social Media Marketing Campaign
+Q3 2024 - Instagram & Facebook campaigns
+Quantity: 1
+Unit Price: €3,500.00
+Subtotal: €3,500.00
+
+Content Creation Package
+20 professional posts with graphics
+Quantity: 1
+Unit Price: €1,800.00
+Subtotal: €1,800.00
+
+SEO Optimization Services
+Website audit and implementation
+Quantity: 1
+Unit Price: €2,200.00
+Subtotal: €2,200.00
+
+Google Ads Management
+3-month campaign management
+Quantity: 1
+Unit Price: €1,500.00
+Subtotal: €1,500.00
+
+------
+Net Amount: €9,000.00
+VAT (23%): €2,070.00
+------
+TOTAL DUE: €11,070.00
+
+Payment Terms: Net 15 days
+Due Date: 06 September 2024
+
+Bank Details:
+IBAN: IE64 BOFI 9000 1234 5678 90
+BIC: BOFIIE2D

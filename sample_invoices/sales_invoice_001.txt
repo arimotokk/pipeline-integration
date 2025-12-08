@@ -1,0 +1,14 @@
+SALES INVOICE
+
+Invoice Number: INV-2024-001
+Date: 2024-01-15
+Customer: Tech Solutions Ltd
+Address: 12 Grafton Street, Dublin 2
+
+Items:
+- Web Development Services: €2,000.00
+- SEO Optimization: €500.00
+
+Net Amount: €2,500.00
+VAT (23%): €575.00
+Total Amount: €3,075.00

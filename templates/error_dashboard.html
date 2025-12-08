@@ -1,53 +1,216 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Failed Invoices - VAT Integration Pipeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block title %}Failed Invoices - VAT Pipeline{% endblock %}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
 
-{% block content %}
-<div class="card">
-    <h2>⚠️ Failed Invoice Extractions</h2>
-    <p>These invoices failed automatic processing and require manual review.</p>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-    {% if failed_invoices %}
-    <table>
-        <thead>
-            <tr>
-                <th>Invoice #</th>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Country</th>
-                <th>Error</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for invoice in failed_invoices %}
-            <tr>
-                <td><strong>{{ invoice.invoice_number }}</strong></td>
-                <td>{{ invoice.invoice_date }}</td>
-                <td>€{{ "%.2f"|format(invoice.amount) }}</td>
-                <td>{{ invoice.country_code }}</td>
-                <td>
-                    <small style="color: #e74c3c;">{{ invoice.error_message | truncate(50) }}</small>
-                </td>
-                <td>
-                    <span class="badge badge-danger">{{ invoice.validation_status }}</span>
-                </td>
-                <td>
-                    <a href="/ui/manual-entry/{{ invoice.id }}" class="btn btn-sm">
-                        Fix Now
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="alert alert-success">
-        <strong>✓ All Clear!</strong> No failed invoices at this time.
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: #155724;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .error-text {
+            color: #f44336;
+            font-size: 13px;
+            max-width: 300px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚠️ Failed Invoices</h1>
+            <div class="nav-buttons">
+                <a href="/" class="btn btn-secondary">Upload</a>
+                <a href="/history" class="btn btn-secondary">History</a>
+                <a href="/vat-summary" class="btn btn-secondary">VAT Summary</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="alert-warning">
+                <strong>Action Required:</strong> These invoices failed automatic processing and need manual data entry.
+            </div>
+
+            {% if failed_invoices %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Error Message</th>
+                        <th>Upload Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in failed_invoices %}
+                    <tr>
+                        <td><strong>{{ invoice.file_name }}</strong></td>
+                        <td><span class="error-text">{{ invoice.parsing_error }}</span></td>
+                        <td>{{ invoice.created_at }}</td>
+                        <td>
+                            <a href="/manual-entry/{{ invoice.id }}" class="btn btn-primary">Enter Data</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="alert-success">
+                <strong>✓ All Clear!</strong> No failed invoices at this time.
+            </div>
+            {% endif %}
+        </div>
     </div>
-    {% endif %}
-</div>
+</body>
+</html>
 
 <div class="card">
     <h2>📊 Error Statistics</h2>
