@@ -7,6 +7,7 @@ import os
 import io
 import boto3
 from flask import Flask, render_template, request, redirect, url_for, send_file
+from flask_httpauth import HTTPBasicAuth
 from anthropic import Anthropic
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
@@ -20,6 +21,27 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+# Initialize HTTP Basic Authentication
+auth = HTTPBasicAuth()
+
+@auth.verify_password
+def verify_password(username, password):
+    """Verify username and password from environment variables"""
+    auth_username = os.getenv('AUTH_USERNAME')
+    auth_password = os.getenv('AUTH_PASSWORD')
+    
+    print(f"[AUTH DEBUG] Received username: '{username}'")
+    print(f"[AUTH DEBUG] Received password: '{password}'")
+    print(f"[AUTH DEBUG] Expected username: '{auth_username}'")
+    print(f"[AUTH DEBUG] Expected password: '{auth_password}'")
+    
+    if auth_username and auth_password:
+        if username == auth_username and password == auth_password:
+            print("[AUTH DEBUG] ✓ Authentication successful!")
+            return username
+    print("[AUTH DEBUG] ✗ Authentication failed!")
+    return None
 
 # Initialize Anthropic client
 client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
@@ -174,6 +196,7 @@ def calculate_vat(invoice_data, transaction_type):
 
 
 @app.route('/')
+@auth.login_required
 def index():
     """Home page with upload form"""
     vat_periods = database.generate_vat_periods()
@@ -181,6 +204,7 @@ def index():
 
 
 @app.route('/upload', methods=['POST'])
+@auth.login_required
 def upload():
     """Handle batch file upload and process invoices"""
     try:
@@ -327,6 +351,7 @@ def upload():
 
 
 @app.route('/history')
+@auth.login_required
 def history():
     """Show all uploaded invoices"""
     invoices = database.get_all_invoices()
@@ -334,6 +359,7 @@ def history():
 
 
 @app.route('/vat-summary')
+@auth.login_required
 def vat_summary():
     """Show VAT summary by period"""
     summary = database.get_vat_summary_by_period()
@@ -342,6 +368,7 @@ def vat_summary():
 
 
 @app.route('/download-excel')
+@auth.login_required
 def download_excel():
     """Download Excel report"""
     try:
@@ -358,6 +385,7 @@ def download_excel():
 
 
 @app.route('/download-pdf')
+@auth.login_required
 def download_pdf():
     """Download PDF report"""
     try:
@@ -374,6 +402,7 @@ def download_pdf():
 
 
 @app.route('/errors')
+@auth.login_required
 def errors():
     """Show failed invoices that need manual entry"""
     failed_invoices = database.get_failed_invoices()
@@ -381,6 +410,7 @@ def errors():
 
 
 @app.route('/error-review')
+@auth.login_required
 def error_review():
     """Show error review dashboard"""
     error_invoices = database.get_error_invoices()
@@ -388,6 +418,7 @@ def error_review():
 
 
 @app.route('/manual-entry/<int:invoice_id>')
+@auth.login_required
 def manual_entry(invoice_id):
     """Show manual entry form for a failed invoice"""
     with database.get_db() as conn:
@@ -400,6 +431,7 @@ def manual_entry(invoice_id):
 
 
 @app.route('/manual-entry/submit', methods=['POST'])
+@auth.login_required
 def submit_manual_entry():
     """Process manual invoice entry"""
     try:
@@ -434,6 +466,7 @@ def submit_manual_entry():
 
 
 @app.route('/delete/<int:invoice_id>', methods=['POST'])
+@auth.login_required
 def delete_invoice(invoice_id):
     """Delete an invoice"""
     try:
@@ -464,6 +497,7 @@ def delete_invoice(invoice_id):
 
 
 @app.route('/flag-error/<int:invoice_id>', methods=['POST'])
+@auth.login_required
 def flag_error(invoice_id):
     """Manually flag an invoice as error"""
     try:
@@ -491,6 +525,7 @@ def flag_error(invoice_id):
 
 
 @app.route('/edit/<int:invoice_id>')
+@auth.login_required
 def edit_invoice(invoice_id):
     """Show edit form for an invoice"""
     try:
@@ -512,6 +547,7 @@ def edit_invoice(invoice_id):
 
 
 @app.route('/edit/submit', methods=['POST'])
+@auth.login_required
 def submit_edit():
     """Process invoice edit"""
     try:
@@ -543,6 +579,12 @@ def submit_edit():
     
     except Exception as e:
         return f"Error saving changes: {str(e)}", 500
+
+
+@app.route('/health')
+def health():
+    """Health check endpoint for monitoring (no authentication required)"""
+    return {'status': 'healthy'}, 200
 
 
 if __name__ == '__main__':
