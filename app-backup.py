@@ -1,11 +1,9 @@
 """
-VAT Integration Pipeline - Deployment Version
-Flask app with PostgreSQL and Cloudflare R2 for cloud deployment
+VAT Integration Pipeline - Phase 3
+Flask app with batch upload, database storage, VAT reporting, and report downloads
 """
 
 import os
-import io
-import boto3
 from flask import Flask, render_template, request, redirect, url_for, send_file
 from anthropic import Anthropic
 from dotenv import load_dotenv
@@ -20,6 +18,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['UPLOAD_FOLDER'] = 'uploads'
 
 # Initialize Anthropic client
 client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
@@ -27,59 +26,11 @@ client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 # VAT rates
 VAT_RATE = 0.20  # 20% standard UK VAT rate
 
-# Initialize S3 client for Cloudflare R2
-USE_R2 = os.getenv('R2_ENDPOINT_URL') is not None
-
-if USE_R2:
-    s3_client = boto3.client(
-        's3',
-        endpoint_url=os.getenv('R2_ENDPOINT_URL'),
-        aws_access_key_id=os.getenv('R2_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.getenv('R2_SECRET_ACCESS_KEY'),
-        region_name='auto'
-    )
-    R2_BUCKET = os.getenv('R2_BUCKET_NAME')
-else:
-    # Local file storage
-    app.config['UPLOAD_FOLDER'] = 'uploads'
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Ensure upload folder exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Initialize database
 database.init_db()
-
-
-def save_file(file_content, filename):
-    """Save file to R2 or local storage"""
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    unique_filename = f"{timestamp}_{filename}"
-    
-    if USE_R2:
-        # Upload to R2
-        s3_client.put_object(
-            Bucket=R2_BUCKET,
-            Key=f"invoices/{unique_filename}",
-            Body=file_content.encode('utf-8') if isinstance(file_content, str) else file_content
-        )
-        return f"r2://invoices/{unique_filename}"
-    else:
-        # Save locally
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-        with open(file_path, 'w') as f:
-            f.write(file_content)
-        return file_path
-
-
-def get_file(file_path):
-    """Retrieve file from R2 or local storage"""
-    if file_path.startswith('r2://'):
-        # Download from R2
-        key = file_path.replace('r2://', '')
-        response = s3_client.get_object(Bucket=R2_BUCKET, Key=key)
-        return response['Body'].read().decode('utf-8')
-    else:
-        # Read from local storage
-        with open(file_path, 'r') as f:
-            return f.read()
 
 
 def extract_invoice_data(file_content, file_name):
@@ -217,12 +168,16 @@ def upload():
             try:
                 # Save file
                 filename = secure_filename(file.filename)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                unique_filename = f"{timestamp}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 
-                # Read file content
+                # Read file content before saving
                 file_content = file.read().decode('utf-8', errors='ignore')
                 
-                # Save the file to R2 or local storage
-                file_path = save_file(file_content, filename)
+                # Save the file
+                with open(file_path, 'w') as f:
+                    f.write(file_content)
                 
                 # Extract invoice data using Claude
                 invoice_data = extract_invoice_data(file_content, filename)
@@ -235,7 +190,8 @@ def upload():
                 parsing_error = None
                 error_reasons = []
                 
-                # Check for errors
+                # Check for errors: missing data, zero amounts, N/A values, or suspiciously high amounts
+                # 1. Check for zero amounts
                 if vat_calculation['net_amount'] == 0:
                     error_reasons.append('Net amount is £0.00')
                 if vat_calculation['vat_amount'] == 0:
@@ -243,21 +199,26 @@ def upload():
                 if vat_calculation['total_amount'] == 0:
                     error_reasons.append('Total is £0.00')
                 
+                # 2. Check for missing or N/A invoice number
                 if (not invoice_data.get('invoice_number') or 
                     invoice_data.get('invoice_number', '').strip() in ['', 'N/A', 'PENDING']):
                     error_reasons.append('Invoice number is N/A or missing')
                 
+                # 3. Check for missing or N/A date
                 if (not invoice_data.get('date') or 
                     invoice_data.get('date', '').strip() in ['', 'N/A']):
                     error_reasons.append('Date is N/A or missing')
                 
+                # 4. Check for missing or N/A supplier/customer
                 if (not invoice_data.get('supplier_name') or 
                     invoice_data.get('supplier_name', '').strip() in ['', 'N/A']):
                     error_reasons.append('Supplier/Customer is N/A or missing')
                 
+                # 5. Check for suspiciously high net amount (> £100,000)
                 if vat_calculation['net_amount'] > 100000:
                     error_reasons.append(f'Net amount (£{vat_calculation["net_amount"]:.2f}) exceeds £100,000 (likely extraction error)')
                 
+                # 6. Check for suspiciously high VAT amount (> £50,000)
                 if vat_calculation['vat_amount'] > 50000:
                     error_reasons.append(f'VAT amount (£{vat_calculation["vat_amount"]:.2f}) exceeds £50,000 (likely extraction error)')
                 
@@ -287,12 +248,8 @@ def upload():
                 # Update with parsing error if needed
                 if parsing_error:
                     with database.get_db() as conn:
-                        if database.USE_POSTGRES:
-                            conn.cursor().execute('UPDATE invoices SET parsing_error = %s WHERE id = %s', 
-                                           (parsing_error, invoice_id))
-                        else:
-                            conn.execute('UPDATE invoices SET parsing_error = ? WHERE id = ?', 
-                                       (parsing_error, invoice_id))
+                        conn.execute('UPDATE invoices SET parsing_error = ? WHERE id = ?', 
+                                   (parsing_error, invoice_id))
                 
                 # Add to processed list
                 processed_invoices.append({
@@ -391,8 +348,7 @@ def error_review():
 def manual_entry(invoice_id):
     """Show manual entry form for a failed invoice"""
     with database.get_db() as conn:
-        cursor = database._execute_query(conn, 'SELECT * FROM invoices WHERE id = %s' if database.USE_POSTGRES else 'SELECT * FROM invoices WHERE id = ?', 
-                                        (invoice_id,))
+        cursor = conn.execute('SELECT * FROM invoices WHERE id = ?', (invoice_id,))
         invoice = dict(cursor.fetchone())
     
     vat_periods = database.generate_vat_periods()
@@ -439,20 +395,13 @@ def delete_invoice(invoice_id):
     try:
         # Get invoice file path before deleting
         with database.get_db() as conn:
-            cursor = database._execute_query(conn, 'SELECT file_path FROM invoices WHERE id = %s' if database.USE_POSTGRES else 'SELECT file_path FROM invoices WHERE id = ?', 
-                                            (invoice_id,))
+            cursor = conn.execute('SELECT file_path FROM invoices WHERE id = ?', (invoice_id,))
             row = cursor.fetchone()
             if row:
-                file_path = row['file_path'] if database.USE_POSTGRES else row['file_path']
+                file_path = row['file_path']
                 # Delete file if it exists
-                if file_path:
-                    if file_path.startswith('r2://'):
-                        # Delete from R2
-                        key = file_path.replace('r2://', '')
-                        s3_client.delete_object(Bucket=R2_BUCKET, Key=key)
-                    elif os.path.exists(file_path):
-                        # Delete local file
-                        os.remove(file_path)
+                if file_path and os.path.exists(file_path):
+                    os.remove(file_path)
         
         # Delete from database
         database.delete_invoice(invoice_id)
@@ -469,20 +418,12 @@ def flag_error(invoice_id):
     try:
         with database.get_db() as conn:
             # Update status to error and add a note
-            if database.USE_POSTGRES:
-                conn.cursor().execute('''
-                    UPDATE invoices 
-                    SET status = 'error',
-                        parsing_error = COALESCE(parsing_error || '; ', '') || 'Manually flagged by user'
-                    WHERE id = %s
-                ''', (invoice_id,))
-            else:
-                conn.execute('''
-                    UPDATE invoices 
-                    SET status = 'error',
-                        parsing_error = COALESCE(parsing_error || '; ', '') || 'Manually flagged by user'
-                    WHERE id = ?
-                ''', (invoice_id,))
+            conn.execute('''
+                UPDATE invoices 
+                SET status = 'error',
+                    parsing_error = COALESCE(parsing_error || '; ', '') || 'Manually flagged by user'
+                WHERE id = ?
+            ''', (invoice_id,))
         
         return redirect(url_for('history'))
     
@@ -495,8 +436,7 @@ def edit_invoice(invoice_id):
     """Show edit form for an invoice"""
     try:
         with database.get_db() as conn:
-            cursor = database._execute_query(conn, 'SELECT * FROM invoices WHERE id = %s' if database.USE_POSTGRES else 'SELECT * FROM invoices WHERE id = ?', 
-                                            (invoice_id,))
+            cursor = conn.execute('SELECT * FROM invoices WHERE id = ?', (invoice_id,))
             invoice = cursor.fetchone()
             
             if not invoice:
@@ -550,7 +490,7 @@ if __name__ == '__main__':
     if not os.getenv('ANTHROPIC_API_KEY'):
         print("Warning: ANTHROPIC_API_KEY not set in .env file")
     
-    print("Starting VAT Integration Pipeline - Deployment Version")
-    print("Features: PostgreSQL | Cloudflare R2 | Batch Upload | Reports | Error Handling")
-    port = int(os.getenv('PORT', 5002))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    print("Starting VAT Integration Pipeline - Phase 3")
+    print("Features: Batch Upload | Database | Reports | Excel/PDF Export | Error Handling")
+    print("Server running on http://localhost:5002")
+    app.run(debug=True, port=5002)
